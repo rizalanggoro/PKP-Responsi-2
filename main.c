@@ -52,6 +52,7 @@ struct mahasiswa {
 
 // todo: mengaliaskan struct mahasiswa -> Mahasiswa
 typedef struct mahasiswa Mahasiswa;
+typedef Mahasiswa *MahasiswaPtr;
 
 // todo: membuat struct menu_item untuk mencetak daftar menu
 struct menu_item {
@@ -61,6 +62,10 @@ struct menu_item {
 
 // todo: mengaliaskan struct menu_item -> MenuItem
 typedef struct menu_item MenuItem;
+
+// global variabel
+MahasiswaPtr mahasiswaPtr = NULL;
+int totalMahasiswa = 0;
 
 // fungsi prototipe
 // <~> utama
@@ -77,6 +82,10 @@ void menuUtama();
 // <~> utilitas
 int cetakMenu(MenuItem arrayMenu[], int n);
 void hapusTerminal();
+void tambahMahasiswaPtr(char nim[NIM_SIZE], char nama[NAMA_SIZE],
+                        JenisKelamin jenisKelamin, float ipk);
+void tulisDatabase();
+void bacaDatabase();
 // akhir::fungsi prototipe
 
 // fungsi utama
@@ -204,13 +213,21 @@ void imporMahasiswa() {
     printf("  Nama          : %s\n", nama);
     printf("  Jenis kelamin : %s\n", jenisKelamin == PRIA ? "Pria" : "Wanita");
     printf("  IPK           : %.2f\n", ipk);
+
+    tambahMahasiswaPtr(nim, nama, jenisKelamin, ipk);
+
     indexMahasiswa++;
   }
-
   fclose(filePtr);
+
+  for (int a = 0; a < totalMahasiswa; a++) {
+    printf("%s\n", mahasiswaPtr[a].nama);
+  }
+
+  tulisDatabase();
 }
 
-void eksporMahasiswa() {}
+void eksporMahasiswa() { bacaDatabase(); }
 
 void tentangProgram() {}
 
@@ -222,6 +239,50 @@ void keluarProgram() {
 void menuUtama() { main(); }
 
 // fungsi utilitas
+void tambahMahasiswaPtr(char nim[NIM_SIZE], char nama[NAMA_SIZE],
+                        JenisKelamin jenisKelamin, float ipk) {
+  if (mahasiswaPtr == NULL) mahasiswaPtr = malloc(sizeof(Mahasiswa));
+
+  realloc(mahasiswaPtr, sizeof(Mahasiswa) * (totalMahasiswa + 1));
+  strcpy(mahasiswaPtr[totalMahasiswa].nim, nim);
+  strcpy(mahasiswaPtr[totalMahasiswa].nama, nama);
+  mahasiswaPtr[totalMahasiswa].jenisKelamin = jenisKelamin;
+  mahasiswaPtr[totalMahasiswa].ipk = ipk;
+
+  totalMahasiswa++;
+}
+
+void tulisDatabase() {
+  FILE *filePtr = fopen("database", "a");
+  if (filePtr == NULL) return;
+
+  for (int a = 0; a < totalMahasiswa; a++) {
+    Mahasiswa mahasiswa = mahasiswaPtr[a];
+    fprintf(filePtr, "%s;%s;%s;%.2f\n", mahasiswa.nim, mahasiswa.nama,
+            mahasiswa.jenisKelamin == PRIA ? "Pria" : "Wanita", mahasiswa.ipk);
+  }
+
+  // if (fwrite(mahasiswaPtr, sizeof(Mahasiswa), totalMahasiswa, filePtr) ==
+  //     totalMahasiswa)
+  //   puts("Berhasil menulis database");
+  // else
+  //   puts("Gagal menulis database");
+
+  fclose(filePtr);
+}
+
+void bacaDatabase() {
+  FILE *filePtr = fopen("database", "r");
+  if (filePtr == NULL) return;
+
+  char data[128];
+  while (fscanf(filePtr, " %[^\n]s", data) != EOF) {
+    printf("%s\n", data);
+  }
+
+  fclose(filePtr);
+}
+
 int cetakMenu(MenuItem arrayMenu[], int n) {
   // todo: mencetak menu yang terdapat dalam array
   for (int a = 0; a < n; a++) printf("%d. %s\n", (a + 1), arrayMenu[a].judul);
