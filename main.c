@@ -101,8 +101,12 @@ void menuUtama();
 // <~> utilitas
 int cetakMenu(MenuItem arrayMenu[], int n);
 void hapusTerminal();
+bool ubahMahasiswaPtr(int index, char nim[NIM_SIZE], char nama[NAMA_SIZE],
+                      JenisKelamin jenisKelamin, float ipk);
 void tambahMahasiswaPtr(char nim[NIM_SIZE], char nama[NAMA_SIZE],
                         JenisKelamin jenisKelamin, float ipk);
+bool hapusMahasiswaPtr(int index);
+void hapusSemuaMahasiswa();
 bool initDatabase();
 bool tulisDatabase();
 void bacaDatabase();
@@ -116,10 +120,7 @@ int main() {
   puts("Manajemen Data Mahasiswa\n");
 
   if (initDatabase()) {
-    // imporMahasiswa();
-
     bacaDatabase();
-
     lihatMahasiswa(urutkanData(urutanDataSaatIni));
 
     // MenuItem arrayMenu[] = {
@@ -152,7 +153,7 @@ void tambahMahasiswa() {
 
   SCAN("Masukkan NIM mahasiswa", " %[^\n]s", nim);
   SPACER;
-  SCAN("Masukkan nama mahasiswa", " %[^\n]s", nama);
+  SCAN("Masukkan nama mahasiswa [maks: 24]", " %[^\n]s", nama);
   SPACER;
 
 pilih_jenis_kelamin:
@@ -181,41 +182,57 @@ scan_ipk:
   printf("IPK           : %.2f\n", ipk);
   SPACER;
 
-  puts("Tambahkan data tersebut?");
-  MenuItem arrayKonfirmasi[] = {
-      {"Ya", NULL},
-      {"Ulangi", NULL},
-      {"Batal", &menuUtama},
-  };
-  int respon = cetakMenu(arrayKonfirmasi, ARRAY_SIZE(arrayKonfirmasi));
-  if (respon == 1) {
-    // todo: tambahkan data ke database
-    puts("ok");
-  } else if (respon == 2)
-    // todo: ulangi pengisian data
-    tambahMahasiswa();
+  char konfirmasi;
+  SCAN("Tambahkan data mahasiswa tersebut? [y/n]", " %c", &konfirmasi);
+
+  if (konfirmasi == 'y') {
+    tambahMahasiswaPtr(nim, nama, jenisKelamin, ipk);
+    if (tulisDatabase()) {
+      lihatMahasiswa(urutkanData(urutanDataSaatIni));
+    } else {
+      puts("Gagal menambah data mahasiswa!");
+    }
+  } else {
+    lihatMahasiswa(urutkanData(urutanDataSaatIni));
+  }
 }
 
 void lihatMahasiswa(MahasiswaPtr data) {
   hapusTerminal();
-  printf("Data Mahasiswa (%s)\n\n",
-         urutanDataSaatIni == BY_NIM ? "NIM" : "IPK");
 
+  char *title = "PROGRAM MANAJEMEN DATA MAHASISWA";
+  char *title2 = "by rizalanggoro";
   int lineWidth = NIM_SIZE + NAMA_SIZE + JENIS_KELAMIN_SIZE + IPK_SIZE +
                   ((3 * 3) + (2 * 2));
+  int titleLen = strlen(title);
+  int titleLen2 = strlen(title2);
+  int titleMargin = (lineWidth - titleLen) / 2;
+  int titleMargin2 = (lineWidth - titleLen2) / 2;
+  printf("%*s%s\n", titleMargin, "", title);
+  printf("%*s%s\n", titleMargin2, "", title2);
+  SPACER;
+  SPACER;
+
+  printf("Berdasarkan (%s)\n", urutanDataSaatIni == BY_NIM ? "NIM" : "IPK");
+
   HORIZONTAL_LINE(lineWidth);
   printf("| %-*s | %-*s | %-*s | %-*s |\n", NIM_SIZE, "NIM", NAMA_SIZE, "Nama",
          JENIS_KELAMIN_SIZE, "Kelamin", IPK_SIZE, "IPK");
   HORIZONTAL_LINE(lineWidth);
 
-  for (int a = 0; a < totalMahasiswa; a++) {
-    Mahasiswa mahasiswa = data[a];
+  if (totalMahasiswa > 0) {
+    for (int a = 0; a < totalMahasiswa; a++) {
+      Mahasiswa mahasiswa = data[a];
 
-    printf("| %-*s | %-*s | %-*s | %*.2f |\n", NIM_SIZE, mahasiswa.nim,
-           NAMA_SIZE, mahasiswa.nama, JENIS_KELAMIN_SIZE,
-           mahasiswa.jenisKelamin == PRIA ? "Pria" : "Wanita", IPK_SIZE,
-           mahasiswa.ipk);
+      printf("| %-*s | %-*s | %-*s | %*.2f |\n", NIM_SIZE, mahasiswa.nim,
+             NAMA_SIZE, mahasiswa.nama, JENIS_KELAMIN_SIZE,
+             mahasiswa.jenisKelamin == PRIA ? "Pria" : "Wanita", IPK_SIZE,
+             mahasiswa.ipk);
+    }
+  } else {
+    printf("| %*s |\n", (lineWidth - 4), "");
   }
+
   HORIZONTAL_LINE(lineWidth);
   printf("| Total Mahasiswa = %3d %*s |\n", totalMahasiswa, (lineWidth - 26),
          "");
@@ -224,27 +241,178 @@ void lihatMahasiswa(MahasiswaPtr data) {
   SPACER;
   puts("Opsi:");
   MenuItem arrayMenu[] = {
-      {"Lihat berdasarkan NIM", NULL},       {"Lihat berdasarkan IPK", NULL},
-      {"Ubah data mahasiswa", NULL},         {"Hapus data mahasiswa", NULL},
-      {"Kembali ke menu utama", &menuUtama},
+      {"Tambah data mahasiswa", &tambahMahasiswa},
+      {"Lihat berdasarkan NIM", NULL},
+      {"Lihat berdasarkan IPK", NULL},
+      {"Ubah data mahasiswa", &ubahMahasiswa},
+      {"Hapus data mahasiswa", &hapusMahasiswa},
+      {"Hapus semua data mahasiswa", &hapusSemuaMahasiswa},
+      {"Impor data mahasiswa", &imporMahasiswa},
+      {"Ekspor data mahasiswa", NULL},
+      {"Keluar program", &keluarProgram},
   };
   int opsi = cetakMenu(arrayMenu, ARRAY_SIZE(arrayMenu));
 
-  if (opsi == 1) {
+  if (opsi == 2) {
     urutanDataSaatIni = BY_NIM;
     lihatMahasiswa(urutkanData(BY_NIM));
-  } else if (opsi == 2) {
+  } else if (opsi == 3) {
     urutanDataSaatIni = BY_IPK;
     lihatMahasiswa(urutkanData(BY_IPK));
   }
 }
 
-void ubahMahasiswa() {}
+void ubahMahasiswa() {
+  char nim[NIM_SIZE];
 
-void hapusMahasiswa() {}
+  SPACER;
+  puts("Ubah Data Mahasiswa\n");
+  SCAN("Masukkan NIM mahasiswa", " %[^\n]s", nim);
+  SPACER;
+
+  // todo: mencari nim pada mahasiswa ptr
+  int index = -1;
+  for (int a = 0; a < totalMahasiswa; a++)
+    if (strcmp(mahasiswaPtr[a].nim, nim) == 0) {
+      index = a;
+      break;
+    }
+
+  if (index == -1) {
+    puts("NIM mahasiswa tidak ditemukan!");
+
+  } else {
+    puts("Detail Mahasiswa");
+
+    Mahasiswa mahasiswa = mahasiswaPtr[index];
+    printf("NIM           : %s\n", mahasiswa.nim);
+    printf("Nama          : %s\n", mahasiswa.nama);
+    printf("Jenis Kelamin : %s\n",
+           mahasiswa.jenisKelamin == PRIA ? "Pria" : "Wanita");
+    printf("IPK           : %.2f\n", mahasiswa.ipk);
+    SPACER;
+
+    char nim[NIM_SIZE];
+    strcpy(nim, mahasiswa.nim);
+    char nama[NAMA_SIZE];
+    strcpy(nama, mahasiswa.nama);
+    int jenisKelamin = mahasiswa.jenisKelamin;
+    float ipk = mahasiswa.ipk;
+
+    char konfirmasi;
+    SCAN("Ubah NIM? [y/n]", " %c", &konfirmasi);
+    SPACER;
+    if (konfirmasi == 'y') {
+      SCAN("Masukkan NIM mahasiswa", " %[^\n]s", nim);
+      SPACER;
+    }
+
+    SCAN("Ubah nama? [y/n]", " %c", &konfirmasi);
+    SPACER;
+    if (konfirmasi == 'y') {
+      SCAN("Masukkan nama mahasiswa [maks: 24]", " %[^\n]s", nama);
+      SPACER;
+    }
+
+    SCAN("Ubah jenis kelamin? [y/n]", " %c", &konfirmasi);
+    SPACER;
+    if (konfirmasi == 'y') {
+      puts("Pilih jenis kelamin");
+      MenuItem arrayJenisKelamin[] = {
+          {"Pria", NULL},
+          {"Wanita", NULL},
+      };
+      jenisKelamin =
+          cetakMenu(arrayJenisKelamin, ARRAY_SIZE(arrayJenisKelamin));
+      SPACER;
+    }
+
+    SCAN("Ubah IPK? [y/n]", " %c", &konfirmasi);
+    SPACER;
+    if (konfirmasi == 'y') {
+      SCAN("Masukkan IPK mahasiswa", "%f", &ipk);
+      SPACER;
+    }
+
+    puts("Konfirmasi Data");
+    printf("NIM           : %s\n", nim);
+    printf("Nama          : %s\n", nama);
+    printf("Jenis Kelamin : %s\n", jenisKelamin == PRIA ? "Pria" : "Wanita");
+    printf("IPK           : %.2f\n", ipk);
+    SPACER;
+
+    SCAN("Apakah data tersebut sudah benar? [y/n]", " %c", &konfirmasi);
+    SPACER;
+    if (konfirmasi == 'y') {
+      if (ubahMahasiswaPtr(index, nim, nama, jenisKelamin, ipk)) {
+        lihatMahasiswa(urutkanData(urutanDataSaatIni));
+      } else {
+        puts("Gagal mengubah data mahasiswa!");
+      }
+    }
+  }
+}
+
+void hapusSemuaMahasiswa() {
+  puts("Hapus Database\n");
+
+  char konfirmasi;
+  SCAN("Apakah Anda yakin akan menghapus database? [y/n]", " %c", &konfirmasi);
+  SPACER;
+  if (konfirmasi == 'y') {
+    totalMahasiswa = 0;
+    realloc(mahasiswaPtr, sizeof(Mahasiswa) * totalMahasiswa);
+
+    if (tulisDatabase()) {
+      lihatMahasiswa(urutkanData(urutanDataSaatIni));
+    } else {
+      puts("Gagal menghapus database!");
+    }
+  }
+}
+
+void hapusMahasiswa() {
+  char nim[NIM_SIZE];
+
+  SPACER;
+  puts("Hapus Data Mahasiswa\n");
+  SCAN("Masukkan NIM mahasiswa", " %[^\n]s", nim);
+  SPACER;
+
+  // todo: mencari nim pada mahasiswa ptr
+  int index = -1;
+  for (int a = 0; a < totalMahasiswa; a++)
+    if (strcmp(mahasiswaPtr[a].nim, nim) == 0) {
+      index = a;
+      break;
+    }
+
+  if (index == -1) {
+    puts("NIM mahasiswa tidak ditemukan!");
+  } else {
+    Mahasiswa mahasiswa = mahasiswaPtr[index];
+    printf("NIM           : %s\n", mahasiswa.nim);
+    printf("Nama          : %s\n", mahasiswa.nama);
+    printf("Jenis Kelamin : %s\n",
+           mahasiswa.jenisKelamin == PRIA ? "Pria" : "Wanita");
+    printf("IPK           : %.2f\n", mahasiswa.ipk);
+    SPACER;
+
+    char konfirmasi;
+    SCAN("Apakah Anda yakin akan menghapus data tersebut? [y/n]", " %c",
+         &konfirmasi);
+    SPACER;
+    if (konfirmasi == 'y') {
+      if (hapusMahasiswaPtr(index)) {
+        lihatMahasiswa(urutkanData(urutanDataSaatIni));
+      } else {
+        puts("Gagal menghapus data mahasiswa!");
+      }
+    }
+  }
+}
 
 void imporMahasiswa() {
-  hapusTerminal();
   puts("Impor Data Mahasiswa\n");
 
   char namaFile[128];
@@ -294,11 +462,10 @@ void imporMahasiswa() {
   fclose(filePtr);
   SPACER;
 
-  if (tulisDatabase()) {
-    puts("Berhasil mengimpor data mahasiswa...");
-  } else {
+  if (tulisDatabase())
+    lihatMahasiswa(urutkanData(urutanDataSaatIni));
+  else
     puts("Gagal mengimpor data mahasiswa...");
-  }
 }
 
 void eksporMahasiswa() {}
@@ -313,6 +480,29 @@ void keluarProgram() {
 void menuUtama() { main(); }
 
 // fungsi utilitas
+bool hapusMahasiswaPtr(int index) {
+  int loopCount = totalMahasiswa - (index + 1);
+  int startIndex = index;
+  for (int a = 0; a < loopCount; a++) {
+    mahasiswaPtr[a + startIndex] = mahasiswaPtr[a + index + 1];
+  }
+
+  totalMahasiswa--;
+  realloc(mahasiswaPtr, sizeof(Mahasiswa) * totalMahasiswa);
+
+  return tulisDatabase();
+}
+
+bool ubahMahasiswaPtr(int index, char nim[NIM_SIZE], char nama[NAMA_SIZE],
+                      JenisKelamin jenisKelamin, float ipk) {
+  strcpy(mahasiswaPtr[index].nim, nim);
+  strcpy(mahasiswaPtr[index].nama, nama);
+  mahasiswaPtr[index].jenisKelamin = jenisKelamin;
+  mahasiswaPtr[index].ipk = ipk;
+
+  return tulisDatabase();
+}
+
 void tambahMahasiswaPtr(char nim[NIM_SIZE], char nama[NAMA_SIZE],
                         JenisKelamin jenisKelamin, float ipk) {
   if (mahasiswaPtr == NULL) mahasiswaPtr = malloc(sizeof(Mahasiswa));
