@@ -531,9 +531,19 @@ void imporMahasiswa() {
   if (tulisDatabase())
     // todo: ketika berhasil menulis database
     // todo: kembali ke menu utama / menu lihat mahasiswa
-    lihatMahasiswa(urutkanData(urutanDataSaatIni));
+    // ! diganti dengan konfirmasi
+    // lihatMahasiswa(urutkanData(urutanDataSaatIni));
+    puts("Berhasil mengimpor data mahasiswa...");
   else
     puts("Gagal mengimpor data mahasiswa...");
+  SPACER;
+
+  puts("Opsi");
+  MenuItem arrayMenu[] = {
+      {"Kembali ke menu utama", &menuUtama},
+      {"Keluar program", &keluarProgram},
+  };
+  cetakMenu(arrayMenu, ARRAY_SIZE(arrayMenu));
 }
 
 void eksporMahasiswa() {
