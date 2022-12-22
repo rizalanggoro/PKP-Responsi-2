@@ -300,6 +300,14 @@ void ubahMahasiswa() {
   if (index == -1) {
     // todo: menampilkan pesan error ketika nim tidak ditemukan
     puts("NIM mahasiswa tidak ditemukan!");
+    SPACER;
+
+    puts("Opsi");
+    MenuItem arrayMenu[] = {
+        {"Kembali ke menu utama", &menuUtama},
+        {"Keluar program", &keluarProgram},
+    };
+    cetakMenu(arrayMenu, ARRAY_SIZE(arrayMenu));
   } else {
     puts("Detail Mahasiswa");
 
@@ -382,12 +390,21 @@ void ubahMahasiswa() {
       // todo: mengubah data mahasiswa sekaligus menulis database
       if (ubahMahasiswaPtr(index, nim, nama, jenisKelamin, ipk)) {
         // todo: kembali ke menu utama jika berhasil
-        lihatMahasiswa(urutkanData(urutanDataSaatIni));
+        // ! diganti dengan konfirmasi
+        // lihatMahasiswa(urutkanData(urutanDataSaatIni));
+        puts("Berhasil mengubah data mahasiswa...");
       } else {
         // todo: tampilkan pesan error ketika gagal
-        puts("Gagal mengubah data mahasiswa!");
+        puts("Gagal mengubah data mahasiswa...");
       }
     }
+    SPACER;
+    puts("Opsi");
+    MenuItem arrayMenu[] = {
+        {"Kembali ke menu utama", &menuUtama},
+        {"Keluar program", &keluarProgram},
+    };
+    cetakMenu(arrayMenu, ARRAY_SIZE(arrayMenu));
   }
 }
 
