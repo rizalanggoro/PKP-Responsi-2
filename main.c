@@ -400,7 +400,7 @@ void hapusSemuaMahasiswa() {
   if (konfirmasi == 'y') {
     // todo: mengosongkan totalMahasiswa dan mahasiswaPtr
     totalMahasiswa = 0;
-    realloc(mahasiswaPtr, sizeof(Mahasiswa) * totalMahasiswa);
+    mahasiswaPtr = realloc(mahasiswaPtr, sizeof(Mahasiswa) * totalMahasiswa);
 
     // todo: menulis database
     if (tulisDatabase()) {
@@ -639,7 +639,7 @@ bool hapusMahasiswaPtr(int index) {
   // todo: mengurangi total mahasiswa dan
   // todo: mengalokasikan ulang mahasiswaPtr
   totalMahasiswa--;
-  realloc(mahasiswaPtr, sizeof(Mahasiswa) * totalMahasiswa);
+  mahasiswaPtr = realloc(mahasiswaPtr, sizeof(Mahasiswa) * totalMahasiswa);
 
   // todo: mengembalikan bool dari fungsi tulis database
   return tulisDatabase();
@@ -665,7 +665,8 @@ void tambahMahasiswaPtr(char nim[NIM_SIZE], char nama[NAMA_SIZE],
 
   // todo: mengalokasikan ulang mahasiswa ptr
   // todo: guna menampung totalMahasiswa + 1
-  realloc(mahasiswaPtr, sizeof(Mahasiswa) * (totalMahasiswa + 1));
+  mahasiswaPtr =
+      realloc(mahasiswaPtr, sizeof(Mahasiswa) * (totalMahasiswa + 1));
 
   // todo: memasukkan data nim, nama, j.kelamin, ipk
   // todo: pada index terakhir atau totalMahasiswa
