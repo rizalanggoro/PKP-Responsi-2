@@ -18,7 +18,6 @@
   NIM   : L0122142
 */
 
-#include <ctype.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -32,6 +31,7 @@
 
 #define ARRAY_SIZE(x) (sizeof(x) / sizeof(x[0]))
 #define SPACER puts("")
+#define FSPACER(filePtr) fprintf(filePtr, "\n")
 #define SCAN(petunjuk, format, dest) \
   puts(petunjuk);                    \
   printf(">> ");                     \
@@ -42,6 +42,13 @@
       printf("-");                \
     else                          \
       puts("-");                  \
+  }
+#define FHORIZONTAL_LINE(filePtr, num) \
+  for (int a = 0; a < num; a++) {      \
+    if (a < (num - 1))                 \
+      fprintf(filePtr, "-");           \
+    else                               \
+      fprintf(filePtr, "-\n");         \
   }
 
 // todo: membuat enum pengurutan data
@@ -111,13 +118,12 @@ bool initDatabase();
 bool tulisDatabase();
 void bacaDatabase();
 MahasiswaPtr urutkanData(UrutanData urutanData);
+void handleSigInt();
 // akhir::fungsi prototipe
 
 // fungsi utama
 int main() {
   hapusTerminal();
-
-  puts("Manajemen Data Mahasiswa\n");
 
   if (initDatabase()) {
     bacaDatabase();
@@ -248,7 +254,8 @@ void lihatMahasiswa(MahasiswaPtr data) {
       {"Hapus data mahasiswa", &hapusMahasiswa},
       {"Hapus semua data mahasiswa", &hapusSemuaMahasiswa},
       {"Impor data mahasiswa", &imporMahasiswa},
-      {"Ekspor data mahasiswa", NULL},
+      {"Ekspor data mahasiswa", &eksporMahasiswa},
+      {"Tentang program", &tentangProgram},
       {"Keluar program", &keluarProgram},
   };
   int opsi = cetakMenu(arrayMenu, ARRAY_SIZE(arrayMenu));
@@ -317,6 +324,7 @@ void ubahMahasiswa() {
     SCAN("Ubah jenis kelamin? [y/n]", " %c", &konfirmasi);
     SPACER;
     if (konfirmasi == 'y') {
+    pilih_jenis_kelamin:
       puts("Pilih jenis kelamin");
       MenuItem arrayJenisKelamin[] = {
           {"Pria", NULL},
@@ -325,13 +333,19 @@ void ubahMahasiswa() {
       jenisKelamin =
           cetakMenu(arrayJenisKelamin, ARRAY_SIZE(arrayJenisKelamin));
       SPACER;
+      if (jenisKelamin == -1) goto pilih_jenis_kelamin;
     }
 
     SCAN("Ubah IPK? [y/n]", " %c", &konfirmasi);
     SPACER;
     if (konfirmasi == 'y') {
+    masukkan_ipk:
       SCAN("Masukkan IPK mahasiswa", "%f", &ipk);
       SPACER;
+      if (ipk > 4) {
+        puts("IPK tidak valid!");
+        goto masukkan_ipk;
+      }
     }
 
     puts("Konfirmasi Data");
@@ -413,7 +427,9 @@ void hapusMahasiswa() {
 }
 
 void imporMahasiswa() {
-  puts("Impor Data Mahasiswa\n");
+  SPACER;
+  puts("Impor Data Mahasiswa");
+  SPACER;
 
   char namaFile[128];
 
@@ -468,9 +484,84 @@ void imporMahasiswa() {
     puts("Gagal mengimpor data mahasiswa...");
 }
 
-void eksporMahasiswa() {}
+void eksporMahasiswa() {
+  SPACER;
+  puts("Ekspor Data Mahasiswa");
+  SPACER;
 
-void tentangProgram() {}
+  char namaFile[128] = "ekspor.txt";
+  char konfirmasi;
+
+  printf("Ekspor data mahasiswa sebagai \"%s\"\n", namaFile);
+
+  SCAN("Ubah nama file? [y/n]", " %c", &konfirmasi);
+  SPACER;
+  if (konfirmasi == 'y') {
+    SCAN("Masukkan nama file", " %[^\n]s", namaFile);
+    SPACER;
+  }
+
+  FILE *filePtr = fopen(namaFile, "w");
+  if (filePtr == NULL) return;
+
+  char *title = "TABEL DATA MAHASISWA";
+  int lineWidth = NIM_SIZE + NAMA_SIZE + JENIS_KELAMIN_SIZE + IPK_SIZE +
+                  ((3 * 3) + (2 * 2));
+  int titleLen = strlen(title);
+  int titleMargin = (lineWidth - titleLen) / 2;
+  fprintf(filePtr, "%*s%s\n", titleMargin, "", title);
+  FSPACER(filePtr);
+  FSPACER(filePtr);
+
+  fprintf(filePtr, "Berdasarkan (%s)\n",
+          urutanDataSaatIni == BY_NIM ? "NIM" : "IPK");
+
+  FHORIZONTAL_LINE(filePtr, lineWidth);
+  fprintf(filePtr, "| %-*s | %-*s | %-*s | %-*s |\n", NIM_SIZE, "NIM",
+          NAMA_SIZE, "Nama", JENIS_KELAMIN_SIZE, "Kelamin", IPK_SIZE, "IPK");
+  FHORIZONTAL_LINE(filePtr, lineWidth);
+
+  if (totalMahasiswa > 0) {
+    for (int a = 0; a < totalMahasiswa; a++) {
+      Mahasiswa mahasiswa = mahasiswaPtr[a];
+
+      fprintf(filePtr, "| %-*s | %-*s | %-*s | %*.2f |\n", NIM_SIZE,
+              mahasiswa.nim, NAMA_SIZE, mahasiswa.nama, JENIS_KELAMIN_SIZE,
+              mahasiswa.jenisKelamin == PRIA ? "Pria" : "Wanita", IPK_SIZE,
+              mahasiswa.ipk);
+    }
+  } else {
+    fprintf(filePtr, "| %*s |\n", (lineWidth - 4), "");
+  }
+
+  FHORIZONTAL_LINE(filePtr, lineWidth);
+  fprintf(filePtr, "| Total Mahasiswa = %3d %*s |\n", totalMahasiswa,
+          (lineWidth - 26), "");
+  FHORIZONTAL_LINE(filePtr, lineWidth);
+
+  fclose(filePtr);
+
+  lihatMahasiswa(urutkanData(urutanDataSaatIni));
+}
+
+void tentangProgram() {
+  hapusTerminal();
+  puts("PROGRAM MANAJEMEN DATA MAHASISWA");
+  SPACER;
+  puts("Dibuat oleh");
+  puts("  Nama  : Rizal Dwi Anggoro");
+  puts("  NIM   : L0122142");
+  puts("  Kelas : D");
+  puts("  Repo  : https://github.com/rizalanggoro/PKP-Responsi-2");
+
+  SPACER;
+  MenuItem menu[] = {
+      {"Kembali ke menu utama", NULL},
+      {"Keluar program", &keluarProgram},
+  };
+  int res = cetakMenu(menu, ARRAY_SIZE(menu));
+  if (res == 1) lihatMahasiswa(urutkanData(urutanDataSaatIni));
+}
 
 void keluarProgram() {
   puts("\nKeluar program...");
@@ -581,7 +672,7 @@ MahasiswaPtr urutkanData(UrutanData urutanData) {
 
 int cetakMenu(MenuItem arrayMenu[], int n) {
   // todo: mencetak menu yang terdapat dalam array
-  for (int a = 0; a < n; a++) printf("%d. %s\n", (a + 1), arrayMenu[a].judul);
+  for (int a = 0; a < n; a++) printf("%2d. %s\n", (a + 1), arrayMenu[a].judul);
 
   printf(">> ");
   int opsi;
