@@ -186,6 +186,7 @@ scan_ipk:
   // todo: melakukan konfirmasi data sebelum penambahan
   char konfirmasi;
   SCAN("Tambahkan data mahasiswa tersebut? [y/n]", " %c", &konfirmasi);
+  SPACER;
 
   if (konfirmasi == 'y') {
     // todo: menambah data mahasiswa ke mahasiswaPtr
@@ -194,15 +195,21 @@ scan_ipk:
     // todo: menulis database / menyimpan mahasiswaPtr ke database
     if (tulisDatabase()) {
       // todo: kembali ke menu utama ketika berhasil
-      lihatMahasiswa(urutkanData(urutanDataSaatIni));
+      // ! diganti dengan konfirmasi
+      // lihatMahasiswa(urutkanData(urutanDataSaatIni));
+      puts("Berhasil menambahkan data mahasiswa...");
     } else {
       // todo: ketika gagal, tampilkan pesan error
-      puts("Gagal menambah data mahasiswa!");
+      puts("Gagal menambahkan data mahasiswa...");
     }
-  } else {
-    // todo: kembali ke menu utama, ketika tidak jadi menambah data
-    lihatMahasiswa(urutkanData(urutanDataSaatIni));
   }
+  SPACER;
+  puts("Opsi");
+  MenuItem arrayMenu[] = {
+      {"Kembali ke menu utama", &menuUtama},
+      {"Keluar program", &keluarProgram},
+  };
+  cetakMenu(arrayMenu, ARRAY_SIZE(arrayMenu));
 }
 
 void lihatMahasiswa(MahasiswaPtr data) {
