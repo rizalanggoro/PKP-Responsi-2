@@ -597,8 +597,17 @@ void eksporMahasiswa() {
 
   fclose(filePtr);
 
-  // todo: kembali ke menu utama / menu lihat mahasiswa
-  lihatMahasiswa(urutkanData(urutanDataSaatIni));
+  puts("Data mahasiswa berhasil diekspor...\n");
+  puts("Opsi");
+  MenuItem arrayMenu[] = {
+      {"Kembali ke menu utama", &menuUtama},
+      {"Keluar program", &keluarProgram},
+  };
+  cetakMenu(arrayMenu, ARRAY_SIZE(arrayMenu));
+
+  // ! diubah menjadi opsi
+  // // todo: kembali ke menu utama / menu lihat mahasiswa
+  // lihatMahasiswa(urutkanData(urutanDataSaatIni));
 }
 
 void tentangProgram() {
