@@ -102,6 +102,7 @@ void imporMahasiswa();
 void eksporMahasiswa();
 void tentangProgram();
 void keluarProgram();
+void menuUtama();
 
 // <~> utilitas
 int cetakMenu(MenuItem arrayMenu[], int n);
@@ -623,6 +624,8 @@ void keluarProgram() {
   puts("\nKeluar program...");
   exit(0);
 }
+
+void menuUtama() { lihatMahasiswa(urutkanData(urutanDataSaatIni)); }
 
 // fungsi utilitas
 bool hapusMahasiswaPtr(int index) {
