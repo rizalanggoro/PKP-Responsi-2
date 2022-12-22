@@ -1,7 +1,0 @@
-L0122142;aRizal Dwi Anggoro ;Pria;5.0
-L0122143;fRizal Dwi Anggoro 1;pria;4.0
-L0122144;gRizal Dwi Anggoro 2;PRIA;3.0
-L0122145;werRizal Dwi Anggoro 3;Wanita;2.0
-L0122146;bRizal Dwi Anggoro 4;wanita;1.0
-L0122147;ghRizal Dwi Anggoro 5;WANITA;0.0
-L0122148;zRizal Dwi Anggoro 6;Pria;1.0
