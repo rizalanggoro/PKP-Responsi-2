@@ -19,12 +19,16 @@
 */
 
 #include <ctype.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-#define NIM_SIZE 16
-#define NAMA_SIZE 64
+#define NO_SIZE 3
+#define NIM_SIZE 10
+#define NAMA_SIZE 24
+#define JENIS_KELAMIN_SIZE 8
+#define IPK_SIZE 6
 
 #define ARRAY_SIZE(x) (sizeof(x) / sizeof(x[0]))
 #define SPACER puts("")
@@ -32,6 +36,20 @@
   puts(petunjuk);                    \
   printf(">> ");                     \
   scanf(format, dest);
+#define HORIZONTAL_LINE(num)      \
+  for (int a = 0; a < num; a++) { \
+    if (a < (num - 1))            \
+      printf("-");                \
+    else                          \
+      puts("-");                  \
+  }
+
+// todo: membuat enum pengurutan data
+enum urutan_data {
+  BY_NIM,
+  BY_IPK,
+};
+typedef enum urutan_data UrutanData;
 
 // todo: membuat enum jenis kelamin
 enum jenis_kelamin {
@@ -66,6 +84,7 @@ typedef struct menu_item MenuItem;
 // global variabel
 MahasiswaPtr mahasiswaPtr = NULL;
 int totalMahasiswa = 0;
+UrutanData urutanDataSaatIni = BY_NIM;
 
 // fungsi prototipe
 // <~> utama
@@ -84,8 +103,10 @@ int cetakMenu(MenuItem arrayMenu[], int n);
 void hapusTerminal();
 void tambahMahasiswaPtr(char nim[NIM_SIZE], char nama[NAMA_SIZE],
                         JenisKelamin jenisKelamin, float ipk);
-void tulisDatabase();
+bool initDatabase();
+bool tulisDatabase();
 void bacaDatabase();
+MahasiswaPtr urutkanData(UrutanData urutanData);
 // akhir::fungsi prototipe
 
 // fungsi utama
@@ -94,17 +115,28 @@ int main() {
 
   puts("Manajemen Data Mahasiswa\n");
 
-  MenuItem arrayMenu[] = {
-      {"Tambah Mahasiswa", &tambahMahasiswa},       // todo: create
-      {"Lihat Data Mahasiwa", &lihatMahasiswa},     // todo: read
-      {"Ubah Data Mahasiswa", &ubahMahasiswa},      // todo: update
-      {"Hapus Data Mahasiswa", &hapusMahasiswa},    // todo: delete
-      {"Impor Data Mahasiswa", &imporMahasiswa},    // todo: import
-      {"Ekspor Data Mahasiswa", &eksporMahasiswa},  // todo: export
-      {"Tentang Program", &tentangProgram},
-      {"Keluar Program", &keluarProgram},
-  };
-  cetakMenu(arrayMenu, ARRAY_SIZE(arrayMenu));
+  if (initDatabase()) {
+    // imporMahasiswa();
+
+    bacaDatabase();
+
+    lihatMahasiswa(urutkanData(urutanDataSaatIni));
+
+    // MenuItem arrayMenu[] = {
+    //     {"Tambah Mahasiswa", &tambahMahasiswa},       // todo: create
+    //     {"Lihat Data Mahasiwa", &lihatMahasiswa},     // todo: read
+    //     {"Ubah Data Mahasiswa", &ubahMahasiswa},      // todo: update
+    //     {"Hapus Data Mahasiswa", &hapusMahasiswa},    // todo: delete
+    //     {"Impor Data Mahasiswa", &imporMahasiswa},    // todo: import
+    //     {"Ekspor Data Mahasiswa", &eksporMahasiswa},  // todo: export
+    //     {"Tentang Program", &tentangProgram},
+    //     {"Keluar Program", &keluarProgram},
+    // };
+    // cetakMenu(arrayMenu, ARRAY_SIZE(arrayMenu));
+  } else {
+    puts("Terjadi kesalahan dalam menyiapkan database...");
+    return -1;
+  }
 
   return 0;
 }
@@ -164,7 +196,48 @@ scan_ipk:
     tambahMahasiswa();
 }
 
-void lihatMahasiswa() {}
+void lihatMahasiswa(MahasiswaPtr data) {
+  hapusTerminal();
+  printf("Data Mahasiswa (%s)\n\n",
+         urutanDataSaatIni == BY_NIM ? "NIM" : "IPK");
+
+  int lineWidth = NIM_SIZE + NAMA_SIZE + JENIS_KELAMIN_SIZE + IPK_SIZE +
+                  ((3 * 3) + (2 * 2));
+  HORIZONTAL_LINE(lineWidth);
+  printf("| %-*s | %-*s | %-*s | %-*s |\n", NIM_SIZE, "NIM", NAMA_SIZE, "Nama",
+         JENIS_KELAMIN_SIZE, "Kelamin", IPK_SIZE, "IPK");
+  HORIZONTAL_LINE(lineWidth);
+
+  for (int a = 0; a < totalMahasiswa; a++) {
+    Mahasiswa mahasiswa = data[a];
+
+    printf("| %-*s | %-*s | %-*s | %*.2f |\n", NIM_SIZE, mahasiswa.nim,
+           NAMA_SIZE, mahasiswa.nama, JENIS_KELAMIN_SIZE,
+           mahasiswa.jenisKelamin == PRIA ? "Pria" : "Wanita", IPK_SIZE,
+           mahasiswa.ipk);
+  }
+  HORIZONTAL_LINE(lineWidth);
+  printf("| Total Mahasiswa = %3d %*s |\n", totalMahasiswa, (lineWidth - 26),
+         "");
+  HORIZONTAL_LINE(lineWidth);
+
+  SPACER;
+  puts("Opsi:");
+  MenuItem arrayMenu[] = {
+      {"Lihat berdasarkan NIM", NULL},       {"Lihat berdasarkan IPK", NULL},
+      {"Ubah data mahasiswa", NULL},         {"Hapus data mahasiswa", NULL},
+      {"Kembali ke menu utama", &menuUtama},
+  };
+  int opsi = cetakMenu(arrayMenu, ARRAY_SIZE(arrayMenu));
+
+  if (opsi == 1) {
+    urutanDataSaatIni = BY_NIM;
+    lihatMahasiswa(urutkanData(BY_NIM));
+  } else if (opsi == 2) {
+    urutanDataSaatIni = BY_IPK;
+    lihatMahasiswa(urutkanData(BY_IPK));
+  }
+}
 
 void ubahMahasiswa() {}
 
@@ -219,15 +292,16 @@ void imporMahasiswa() {
     indexMahasiswa++;
   }
   fclose(filePtr);
+  SPACER;
 
-  for (int a = 0; a < totalMahasiswa; a++) {
-    printf("%s\n", mahasiswaPtr[a].nama);
+  if (tulisDatabase()) {
+    puts("Berhasil mengimpor data mahasiswa...");
+  } else {
+    puts("Gagal mengimpor data mahasiswa...");
   }
-
-  tulisDatabase();
 }
 
-void eksporMahasiswa() { bacaDatabase(); }
+void eksporMahasiswa() {}
 
 void tentangProgram() {}
 
@@ -252,35 +326,67 @@ void tambahMahasiswaPtr(char nim[NIM_SIZE], char nama[NAMA_SIZE],
   totalMahasiswa++;
 }
 
-void tulisDatabase() {
-  FILE *filePtr = fopen("database", "a");
-  if (filePtr == NULL) return;
-
-  for (int a = 0; a < totalMahasiswa; a++) {
-    Mahasiswa mahasiswa = mahasiswaPtr[a];
-    fprintf(filePtr, "%s;%s;%s;%.2f\n", mahasiswa.nim, mahasiswa.nama,
-            mahasiswa.jenisKelamin == PRIA ? "Pria" : "Wanita", mahasiswa.ipk);
+bool initDatabase() {
+  FILE *filePtr = fopen("database.bin", "rb");
+  if (filePtr == NULL) {
+    filePtr = fopen("database.bin", "wb");
+    if (filePtr == NULL) return false;
   }
 
-  // if (fwrite(mahasiswaPtr, sizeof(Mahasiswa), totalMahasiswa, filePtr) ==
-  //     totalMahasiswa)
-  //   puts("Berhasil menulis database");
-  // else
-  //   puts("Gagal menulis database");
+  fclose(filePtr);
+  return true;
+}
+
+bool tulisDatabase() {
+  FILE *filePtr = fopen("database.bin", "wb");
+  if (filePtr == NULL) return false;
+
+  // todo: menulis total data mahasiwa
+  if (fwrite(&totalMahasiswa, sizeof(int), 1, filePtr) != 1) return false;
+
+  // todo: menulis data mahasiswa
+  if (fwrite(mahasiswaPtr, sizeof(Mahasiswa), totalMahasiswa, filePtr) !=
+      totalMahasiswa)
+    return false;
+
+  fclose(filePtr);
+
+  return true;
+}
+
+void bacaDatabase() {
+  FILE *filePtr = fopen("database.bin", "rb");
+  if (filePtr == NULL) return;
+
+  // todo: membaca total mahasiswa
+  if (fread(&totalMahasiswa, sizeof(int), 1, filePtr) != 1) return;
+
+  // todo: mengalokasikan mahasiswaptr sesuai dengan
+  // todo: jumlah mahasiswa
+  mahasiswaPtr = malloc(sizeof(Mahasiswa) * totalMahasiswa);
+
+  // todo: membaca data mahasiswa
+  if (fread(mahasiswaPtr, sizeof(Mahasiswa), totalMahasiswa, filePtr) !=
+      totalMahasiswa)
+    return;
 
   fclose(filePtr);
 }
 
-void bacaDatabase() {
-  FILE *filePtr = fopen("database", "r");
-  if (filePtr == NULL) return;
-
-  char data[128];
-  while (fscanf(filePtr, " %[^\n]s", data) != EOF) {
-    printf("%s\n", data);
+MahasiswaPtr urutkanData(UrutanData urutanData) {
+  for (int step = 0; step < totalMahasiswa - 1; ++step) {
+    for (int i = 0; i < totalMahasiswa - step - 1; ++i) {
+      if (urutanData == BY_NIM
+              ? (strcmp(mahasiswaPtr[i].nim, mahasiswaPtr[i + 1].nim) > 0)
+              : (mahasiswaPtr[i].ipk < mahasiswaPtr[i + 1].ipk)) {
+        Mahasiswa temp = mahasiswaPtr[i];
+        mahasiswaPtr[i] = mahasiswaPtr[i + 1];
+        mahasiswaPtr[i + 1] = temp;
+      }
+    }
   }
 
-  fclose(filePtr);
+  return mahasiswaPtr;
 }
 
 int cetakMenu(MenuItem arrayMenu[], int n) {
