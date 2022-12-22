@@ -102,7 +102,6 @@ void imporMahasiswa();
 void eksporMahasiswa();
 void tentangProgram();
 void keluarProgram();
-void menuUtama();
 
 // <~> utilitas
 int cetakMenu(MenuItem arrayMenu[], int n);
@@ -117,17 +116,21 @@ bool initDatabase();
 bool tulisDatabase();
 void bacaDatabase();
 MahasiswaPtr urutkanData(UrutanData urutanData);
-void handleSigInt();
 // akhir::fungsi prototipe
 
 // fungsi utama
 int main() {
   hapusTerminal();
 
+  // todo: melakukan init database
   if (initDatabase()) {
+    // todo: membaca data mahasiswa dari database
     bacaDatabase();
+
+    // todo: menampilkan data mahasiswa / menu utama
     lihatMahasiswa(urutkanData(urutanDataSaatIni));
   } else {
+    // todo: tampilkan pesan error ketika gagal init database
     puts("Terjadi kesalahan dalam menyiapkan database...");
     return -1;
   }
@@ -144,6 +147,7 @@ void tambahMahasiswa() {
   int jenisKelamin;
   float ipk;
 
+  // todo: meminta input kepada user
   SCAN("Masukkan NIM mahasiswa", " %[^\n]s", nim);
   SPACER;
   SCAN("Masukkan nama mahasiswa [maks: 24]", " %[^\n]s", nama);
@@ -157,13 +161,16 @@ pilih_jenis_kelamin:
   };
   jenisKelamin = cetakMenu(arrayJenisKelamin, ARRAY_SIZE(arrayJenisKelamin));
   SPACER;
-  if (jenisKelamin == -1) goto pilih_jenis_kelamin;
+  if (jenisKelamin == -1)
+    // todo: memilih ulang ketika opsi tidak valid
+    goto pilih_jenis_kelamin;
 
 scan_ipk:
   SCAN("Masukkan IPK mahasiswa", "%f", &ipk);
   SPACER;
   // todo: validasi ipk
   if (ipk > 4) {
+    // todo: input ulang ketika ipk tidak valid
     puts("IPK tidak valid!");
     goto scan_ipk;
   }
@@ -175,17 +182,24 @@ scan_ipk:
   printf("IPK           : %.2f\n", ipk);
   SPACER;
 
+  // todo: melakukan konfirmasi data sebelum penambahan
   char konfirmasi;
   SCAN("Tambahkan data mahasiswa tersebut? [y/n]", " %c", &konfirmasi);
 
   if (konfirmasi == 'y') {
+    // todo: menambah data mahasiswa ke mahasiswaPtr
     tambahMahasiswaPtr(nim, nama, jenisKelamin, ipk);
+
+    // todo: menulis database / menyimpan mahasiswaPtr ke database
     if (tulisDatabase()) {
+      // todo: kembali ke menu utama ketika berhasil
       lihatMahasiswa(urutkanData(urutanDataSaatIni));
     } else {
+      // todo: ketika gagal, tampilkan pesan error
       puts("Gagal menambah data mahasiswa!");
     }
   } else {
+    // todo: kembali ke menu utama, ketika tidak jadi menambah data
     lihatMahasiswa(urutkanData(urutanDataSaatIni));
   }
 }
@@ -193,6 +207,7 @@ scan_ipk:
 void lihatMahasiswa(MahasiswaPtr data) {
   hapusTerminal();
 
+  // todo: menampilkan judul pada tengah
   char *title = "PROGRAM MANAJEMEN DATA MAHASISWA";
   char *title2 = "by rizalanggoro";
   int lineWidth = NIM_SIZE + NAMA_SIZE + JENIS_KELAMIN_SIZE + IPK_SIZE +
@@ -206,8 +221,10 @@ void lihatMahasiswa(MahasiswaPtr data) {
   SPACER;
   SPACER;
 
+  // todo: menampilkan urutan data saat ini
   printf("Berdasarkan (%s)\n", urutanDataSaatIni == BY_NIM ? "NIM" : "IPK");
 
+  // todo: menampilkan tabel data mahasiswa
   HORIZONTAL_LINE(lineWidth);
   printf("| %-*s | %-*s | %-*s | %-*s |\n", NIM_SIZE, "NIM", NAMA_SIZE, "Nama",
          JENIS_KELAMIN_SIZE, "Kelamin", IPK_SIZE, "IPK");
@@ -223,6 +240,7 @@ void lihatMahasiswa(MahasiswaPtr data) {
              mahasiswa.ipk);
     }
   } else {
+    // todo: ketika tidak ada data, tampilkan tabel kosong
     printf("| %*s |\n", (lineWidth - 4), "");
   }
 
@@ -232,6 +250,8 @@ void lihatMahasiswa(MahasiswaPtr data) {
   HORIZONTAL_LINE(lineWidth);
 
   SPACER;
+
+  // todo: menampikan opsi yang bisa dipilih
   puts("Opsi:");
   MenuItem arrayMenu[] = {
       {"Tambah data mahasiswa", &tambahMahasiswa},
@@ -261,24 +281,31 @@ void ubahMahasiswa() {
 
   SPACER;
   puts("Ubah Data Mahasiswa\n");
+
+  // todo: meminta user untuk memasukkan nim mahasiswa
   SCAN("Masukkan NIM mahasiswa", " %[^\n]s", nim);
   SPACER;
 
-  // todo: mencari nim pada mahasiswa ptr
+  // todo: mencari nim pada mahasiswa ptr dengan perulangan
   int index = -1;
   for (int a = 0; a < totalMahasiswa; a++)
+    // todo: melakukan validasi nim satu per satu
     if (strcmp(mahasiswaPtr[a].nim, nim) == 0) {
+      // todo: ketika valid, catat index serta lakukan break
       index = a;
       break;
     }
 
   if (index == -1) {
+    // todo: menampilkan pesan error ketika nim tidak ditemukan
     puts("NIM mahasiswa tidak ditemukan!");
-
   } else {
     puts("Detail Mahasiswa");
 
+    // todo: mengambil data mahasiswa dari mahasiswaPtr ke index
     Mahasiswa mahasiswa = mahasiswaPtr[index];
+
+    // todo: menampilkan detail data mahasiswa
     printf("NIM           : %s\n", mahasiswa.nim);
     printf("Nama          : %s\n", mahasiswa.nama);
     printf("Jenis Kelamin : %s\n",
@@ -286,6 +313,7 @@ void ubahMahasiswa() {
     printf("IPK           : %.2f\n", mahasiswa.ipk);
     SPACER;
 
+    // todo: mengisi nilai default
     char nim[NIM_SIZE];
     strcpy(nim, mahasiswa.nim);
     char nama[NAMA_SIZE];
@@ -293,6 +321,7 @@ void ubahMahasiswa() {
     int jenisKelamin = mahasiswa.jenisKelamin;
     float ipk = mahasiswa.ipk;
 
+    // todo: melakukan konfirmasi untuk perubahan
     char konfirmasi;
     SCAN("Ubah NIM? [y/n]", " %c", &konfirmasi);
     SPACER;
@@ -320,7 +349,9 @@ void ubahMahasiswa() {
       jenisKelamin =
           cetakMenu(arrayJenisKelamin, ARRAY_SIZE(arrayJenisKelamin));
       SPACER;
-      if (jenisKelamin == -1) goto pilih_jenis_kelamin;
+      if (jenisKelamin == -1)
+        // todo: pilih ulang ketika opsi tidak valid
+        goto pilih_jenis_kelamin;
     }
 
     SCAN("Ubah IPK? [y/n]", " %c", &konfirmasi);
@@ -330,6 +361,7 @@ void ubahMahasiswa() {
       SCAN("Masukkan IPK mahasiswa", "%f", &ipk);
       SPACER;
       if (ipk > 4) {
+        // todo: input ulang ketika opsi tidak valid
         puts("IPK tidak valid!");
         goto masukkan_ipk;
       }
@@ -342,12 +374,16 @@ void ubahMahasiswa() {
     printf("IPK           : %.2f\n", ipk);
     SPACER;
 
+    // todo: melakukan konfirmasi data baru
     SCAN("Apakah data tersebut sudah benar? [y/n]", " %c", &konfirmasi);
     SPACER;
     if (konfirmasi == 'y') {
+      // todo: mengubah data mahasiswa sekaligus menulis database
       if (ubahMahasiswaPtr(index, nim, nama, jenisKelamin, ipk)) {
+        // todo: kembali ke menu utama jika berhasil
         lihatMahasiswa(urutkanData(urutanDataSaatIni));
       } else {
+        // todo: tampilkan pesan error ketika gagal
         puts("Gagal mengubah data mahasiswa!");
       }
     }
@@ -357,16 +393,21 @@ void ubahMahasiswa() {
 void hapusSemuaMahasiswa() {
   puts("Hapus Database\n");
 
+  // todo: melakukan konfirmasi untuk menghapus semua data mahasiswa
   char konfirmasi;
   SCAN("Apakah Anda yakin akan menghapus database? [y/n]", " %c", &konfirmasi);
   SPACER;
   if (konfirmasi == 'y') {
+    // todo: mengosongkan totalMahasiswa dan mahasiswaPtr
     totalMahasiswa = 0;
     realloc(mahasiswaPtr, sizeof(Mahasiswa) * totalMahasiswa);
 
+    // todo: menulis database
     if (tulisDatabase()) {
+      // todo: ketika berhasil, kembali ke menu utama / menu lihat mahasiswa
       lihatMahasiswa(urutkanData(urutanDataSaatIni));
     } else {
+      // todo: ketika gagal, tampilkan pesan error
       puts("Gagal menghapus database!");
     }
   }
@@ -377,21 +418,29 @@ void hapusMahasiswa() {
 
   SPACER;
   puts("Hapus Data Mahasiswa\n");
+
+  // todo: meminta user memasukkan nim mahasiswa
   SCAN("Masukkan NIM mahasiswa", " %[^\n]s", nim);
   SPACER;
 
-  // todo: mencari nim pada mahasiswa ptr
+  // todo: mencari nim pada mahasiswa ptr dengan perulangan
   int index = -1;
   for (int a = 0; a < totalMahasiswa; a++)
+    // todo: melakukan validasi nim satu per satu
     if (strcmp(mahasiswaPtr[a].nim, nim) == 0) {
+      // todo: ketika nim berhasil ditemukan, catat index & lakukan break
       index = a;
       break;
     }
 
   if (index == -1) {
+    // todo: ketika nim tidak ditemukan, keluarkan pesan error
     puts("NIM mahasiswa tidak ditemukan!");
   } else {
+    // todo: mengambil data mahasiswa dari mahasiswaPtr ke index
     Mahasiswa mahasiswa = mahasiswaPtr[index];
+
+    // todo: menampilkan data / detail mahasiswa
     printf("NIM           : %s\n", mahasiswa.nim);
     printf("Nama          : %s\n", mahasiswa.nama);
     printf("Jenis Kelamin : %s\n",
@@ -399,14 +448,19 @@ void hapusMahasiswa() {
     printf("IPK           : %.2f\n", mahasiswa.ipk);
     SPACER;
 
+    // todo: melakukan konfirmasi sebelum penghapusan data
     char konfirmasi;
     SCAN("Apakah Anda yakin akan menghapus data tersebut? [y/n]", " %c",
          &konfirmasi);
     SPACER;
     if (konfirmasi == 'y') {
+      // todo: melakukan penghapusan data
       if (hapusMahasiswaPtr(index)) {
+        // todo: ketika data berhasil dihapus dari database
+        // todo: kembali ke menu utama / menu lihat mahasiswa
         lihatMahasiswa(urutkanData(urutanDataSaatIni));
       } else {
+        // todo: ketika gagal, keluarkan pesan error
         puts("Gagal menghapus data mahasiswa!");
       }
     }
@@ -420,9 +474,11 @@ void imporMahasiswa() {
 
   char namaFile[128];
 
+  // todo: meminta user untuk memasukkan nama file yang akan diimpor
   SCAN("Masukkan nama file", " %[^\n]s", namaFile);
   SPACER;
 
+  // todo: membuka file yang telah dimasukkan dengan izin read
   FILE *filePtr = fopen(namaFile, "r");
   if (filePtr == NULL) {
     return;
@@ -430,15 +486,19 @@ void imporMahasiswa() {
 
   char data[128];
   int indexMahasiswa = 1;
+  // todo: melakukan scan pada file
   while (fscanf(filePtr, " %[^\n]s", data) != EOF) {
     char nim[NIM_SIZE];
     char nama[NAMA_SIZE];
     int jenisKelamin;
     float ipk;
 
+    // todo: melakukan split data yang telah dibaca
+    // todo: dengan menggunakan delimiter ;
     char *token = strtok(data, ";");
     int index = 0;
     while (token != NULL) {
+      // todo: melakukan parsing data hasil split
       if (index == 0) strcpy(nim, token);
       if (index == 1) strcpy(nama, token);
       if (index == 2)
@@ -458,6 +518,7 @@ void imporMahasiswa() {
     printf("  Jenis kelamin : %s\n", jenisKelamin == PRIA ? "Pria" : "Wanita");
     printf("  IPK           : %.2f\n", ipk);
 
+    // todo: menambahkan data nim, ... ke mahasiswaPtr
     tambahMahasiswaPtr(nim, nama, jenisKelamin, ipk);
 
     indexMahasiswa++;
@@ -465,7 +526,10 @@ void imporMahasiswa() {
   fclose(filePtr);
   SPACER;
 
+  // todo: menulis database / menyimpan data impor ke database
   if (tulisDatabase())
+    // todo: ketika berhasil menulis database
+    // todo: kembali ke menu utama / menu lihat mahasiswa
     lihatMahasiswa(urutkanData(urutanDataSaatIni));
   else
     puts("Gagal mengimpor data mahasiswa...");
@@ -476,11 +540,13 @@ void eksporMahasiswa() {
   puts("Ekspor Data Mahasiswa");
   SPACER;
 
+  // todo: nama file yang diekspor secara default adalah ekspor.txt
   char namaFile[128] = "ekspor.txt";
   char konfirmasi;
 
   printf("Ekspor data mahasiswa sebagai \"%s\"\n", namaFile);
 
+  // todo: melakukan konfirmasi untuk perubahan nama file
   SCAN("Ubah nama file? [y/n]", " %c", &konfirmasi);
   SPACER;
   if (konfirmasi == 'y') {
@@ -488,9 +554,11 @@ void eksporMahasiswa() {
     SPACER;
   }
 
+  // todo: membuka namaFile dengan izin write
   FILE *filePtr = fopen(namaFile, "w");
   if (filePtr == NULL) return;
 
+  // todo: menulis file
   char *title = "TABEL DATA MAHASISWA";
   int lineWidth = NIM_SIZE + NAMA_SIZE + JENIS_KELAMIN_SIZE + IPK_SIZE +
                   ((3 * 3) + (2 * 2));
@@ -528,6 +596,7 @@ void eksporMahasiswa() {
 
   fclose(filePtr);
 
+  // todo: kembali ke menu utama / menu lihat mahasiswa
   lihatMahasiswa(urutkanData(urutanDataSaatIni));
 }
 
@@ -555,49 +624,71 @@ void keluarProgram() {
   exit(0);
 }
 
-void menuUtama() { main(); }
-
 // fungsi utilitas
 bool hapusMahasiswaPtr(int index) {
+  // todo: menghitung total perulangan dan index awal
   int loopCount = totalMahasiswa - (index + 1);
   int startIndex = index;
+
+  // todo: melakukan perulangan guna menggeser posisi data
+  // todo: agar berada pada index yang tepat
   for (int a = 0; a < loopCount; a++) {
     mahasiswaPtr[a + startIndex] = mahasiswaPtr[a + index + 1];
   }
 
+  // todo: mengurangi total mahasiswa dan
+  // todo: mengalokasikan ulang mahasiswaPtr
   totalMahasiswa--;
   realloc(mahasiswaPtr, sizeof(Mahasiswa) * totalMahasiswa);
 
+  // todo: mengembalikan bool dari fungsi tulis database
   return tulisDatabase();
 }
 
 bool ubahMahasiswaPtr(int index, char nim[NIM_SIZE], char nama[NAMA_SIZE],
                       JenisKelamin jenisKelamin, float ipk) {
+  // todo: mengubah data mahasiswa ke index
   strcpy(mahasiswaPtr[index].nim, nim);
   strcpy(mahasiswaPtr[index].nama, nama);
   mahasiswaPtr[index].jenisKelamin = jenisKelamin;
   mahasiswaPtr[index].ipk = ipk;
 
+  // todo: mengembalikan bool dari tulis database
+  // todo: tulis database -> menulis mahasiswaPtr ke database.bin
   return tulisDatabase();
 }
 
 void tambahMahasiswaPtr(char nim[NIM_SIZE], char nama[NAMA_SIZE],
                         JenisKelamin jenisKelamin, float ipk) {
+  // todo: mengalokasikan memori ketika mahasiswa ptr == null
   if (mahasiswaPtr == NULL) mahasiswaPtr = malloc(sizeof(Mahasiswa));
 
+  // todo: mengalokasikan ulang mahasiswa ptr
+  // todo: guna menampung totalMahasiswa + 1
   realloc(mahasiswaPtr, sizeof(Mahasiswa) * (totalMahasiswa + 1));
+
+  // todo: memasukkan data nim, nama, j.kelamin, ipk
+  // todo: pada index terakhir atau totalMahasiswa
   strcpy(mahasiswaPtr[totalMahasiswa].nim, nim);
   strcpy(mahasiswaPtr[totalMahasiswa].nama, nama);
   mahasiswaPtr[totalMahasiswa].jenisKelamin = jenisKelamin;
   mahasiswaPtr[totalMahasiswa].ipk = ipk;
 
+  // todo: menambah total mahasiswa
   totalMahasiswa++;
 }
 
 bool initDatabase() {
+  // todo: membuka file database.bin dengan izin rb
   FILE *filePtr = fopen("database.bin", "rb");
   if (filePtr == NULL) {
+    // todo: ketika file tidak ditemukan
+    // todo: membuat file database.bin dengan cara
+    // todo: fopen dengan izin wb
     filePtr = fopen("database.bin", "wb");
+
+    // todo: ketika gagal membuat file database.bin
+    // todo: return false
     if (filePtr == NULL) return false;
   }
 
@@ -606,6 +697,7 @@ bool initDatabase() {
 }
 
 bool tulisDatabase() {
+  // todo: membuka file database.bin
   FILE *filePtr = fopen("database.bin", "wb");
   if (filePtr == NULL) return false;
 
@@ -623,6 +715,7 @@ bool tulisDatabase() {
 }
 
 void bacaDatabase() {
+  // todo: membuka file database.bin
   FILE *filePtr = fopen("database.bin", "rb");
   if (filePtr == NULL) return;
 
@@ -642,8 +735,11 @@ void bacaDatabase() {
 }
 
 MahasiswaPtr urutkanData(UrutanData urutanData) {
-  for (int step = 0; step < totalMahasiswa - 1; ++step) {
-    for (int i = 0; i < totalMahasiswa - step - 1; ++i) {
+  // todo: fungsi untuk mengurutkan mahasiswa ptr
+  // todo: menggunakan bubble sort
+  for (int step = 0; step < totalMahasiswa - 1; step++) {
+    for (int i = 0; i < totalMahasiswa - step - 1; i++) {
+      // todo: pengkondisian urutan data (by nim, by ipk)
       if (urutanData == BY_NIM
               ? (strcmp(mahasiswaPtr[i].nim, mahasiswaPtr[i + 1].nim) > 0)
               : (mahasiswaPtr[i].ipk < mahasiswaPtr[i + 1].ipk)) {
@@ -684,6 +780,7 @@ int cetakMenu(MenuItem arrayMenu[], int n) {
 }
 
 void hapusTerminal() {
+  // todo: menghapus terminal
   if (system("cls")) system("clear");
 }
 // akhir::fungsi utilitas
