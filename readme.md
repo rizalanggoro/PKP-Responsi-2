@@ -36,6 +36,11 @@ program kalian.
 - Mengimpor data mahasiswa dari file.txt
 - Mengekspor data mahasiswa ke file.txt (dalam bentuk tabel)
 
+### Cara Menjalankan Program
+
+- Buka terminal, lalu arahkan folder ke lokasi `main.exe`.
+- Jalankan program dengan mengetikkan perintah `./main.exe` atau `.\main.exe` pada terminal.
+
 ### Cara Mengimpor Data Mahasiswa
 
 1. Buat file txt baru, contoh `impor.txt`
