@@ -1,11 +1,17 @@
                     TABEL DATA MAHASISWA
 
 
-Berdasarkan (IPK)
+Berdasarkan (NIM)
 -------------------------------------------------------------
 | NIM        | Nama                     | Kelamin  | IPK    |
 -------------------------------------------------------------
-|                                                           |
+| L0122142   | Annisa Putri 3           | Wanita   |   2.00 |
+| L0122143   | Annisa Putri 4           | Wanita   |   1.00 |
+| L0122144   | Annisa Putri 5           | Wanita   |   3.90 |
+| L0122145   | Rizal Dwi Anggoro 0      | Pria     |   4.00 |
+| L0122146   | Rizal Dwi Anggoro 1      | Pria     |   4.00 |
+| L0122147   | Rizal Dwi Anggoro 2      | Pria     |   3.00 |
+| L0122148   | Rizal Dwi Anggoro 6      | Pria     |   1.50 |
 -------------------------------------------------------------
-| Total Mahasiswa =   0                                     |
+| Total Mahasiswa =   7                                     |
 -------------------------------------------------------------
