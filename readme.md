@@ -40,7 +40,7 @@ program kalian.
 
 1. Buat file txt baru, contoh `impor.txt`
 2. Masukkan data yang akan diimpor ke dalam "impor.txt" dengan format `nim;nama;jenis_kelamin;ipk` seperti berikut. <br><br>
-   ![Gambar Impor](images/ss1.png)
+   ![Gambar Impor](images/ss1.png)<br>
    Pastikan setiap `field` dipisahkan dengan `;` karena akan dilakukan split string menggunakan delimiter `;`.
 3. Masuk pada program, lalu masukkan angka `7` kemudian tekan `enter`. <br><br>
    ![Gambar Program](images/ss2.png)
