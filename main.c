@@ -23,7 +23,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define NO_SIZE 3
 #define NIM_SIZE 10
 #define NAMA_SIZE 24
 #define JENIS_KELAMIN_SIZE 8
@@ -128,18 +127,6 @@ int main() {
   if (initDatabase()) {
     bacaDatabase();
     lihatMahasiswa(urutkanData(urutanDataSaatIni));
-
-    // MenuItem arrayMenu[] = {
-    //     {"Tambah Mahasiswa", &tambahMahasiswa},       // todo: create
-    //     {"Lihat Data Mahasiwa", &lihatMahasiswa},     // todo: read
-    //     {"Ubah Data Mahasiswa", &ubahMahasiswa},      // todo: update
-    //     {"Hapus Data Mahasiswa", &hapusMahasiswa},    // todo: delete
-    //     {"Impor Data Mahasiswa", &imporMahasiswa},    // todo: import
-    //     {"Ekspor Data Mahasiswa", &eksporMahasiswa},  // todo: export
-    //     {"Tentang Program", &tentangProgram},
-    //     {"Keluar Program", &keluarProgram},
-    // };
-    // cetakMenu(arrayMenu, ARRAY_SIZE(arrayMenu));
   } else {
     puts("Terjadi kesalahan dalam menyiapkan database...");
     return -1;
