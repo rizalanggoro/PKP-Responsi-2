@@ -613,11 +613,10 @@ void tentangProgram() {
 
   SPACER;
   MenuItem menu[] = {
-      {"Kembali ke menu utama", NULL},
+      {"Kembali ke menu utama", &menuUtama},
       {"Keluar program", &keluarProgram},
   };
-  int res = cetakMenu(menu, ARRAY_SIZE(menu));
-  if (res == 1) lihatMahasiswa(urutkanData(urutanDataSaatIni));
+  cetakMenu(menu, ARRAY_SIZE(menu));
 }
 
 void keluarProgram() {
