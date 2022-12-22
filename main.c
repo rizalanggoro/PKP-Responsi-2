@@ -459,12 +459,21 @@ void hapusMahasiswa() {
       if (hapusMahasiswaPtr(index)) {
         // todo: ketika data berhasil dihapus dari database
         // todo: kembali ke menu utama / menu lihat mahasiswa
-        lihatMahasiswa(urutkanData(urutanDataSaatIni));
+        // ! diganti dengan konfirmasi
+        // lihatMahasiswa(urutkanData(urutanDataSaatIni));
+        puts("Berhasil menghapus data mahasiswa...");
       } else {
         // todo: ketika gagal, keluarkan pesan error
-        puts("Gagal menghapus data mahasiswa!");
+        puts("Gagal menghapus data mahasiswa...");
       }
     }
+    SPACER;
+    puts("Opsi");
+    MenuItem arrayMenu[] = {
+        {"Kembali ke menu utama", &menuUtama},
+        {"Keluar program", &keluarProgram},
+    };
+    cetakMenu(arrayMenu, ARRAY_SIZE(arrayMenu));
   }
 }
 
