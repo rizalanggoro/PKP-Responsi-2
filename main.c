@@ -406,11 +406,21 @@ void hapusSemuaMahasiswa() {
     // todo: menulis database
     if (tulisDatabase()) {
       // todo: ketika berhasil, kembali ke menu utama / menu lihat mahasiswa
-      lihatMahasiswa(urutkanData(urutanDataSaatIni));
+      // ! diganti dengan konfirmasi
+      // lihatMahasiswa(urutkanData(urutanDataSaatIni));
+      puts("Berhasil menghapus database...");
     } else {
       // todo: ketika gagal, tampilkan pesan error
-      puts("Gagal menghapus database!");
+      puts("Gagal menghapus database...");
     }
+    SPACER;
+
+    puts("Opsi");
+    MenuItem arrayMenu[] = {
+        {"Kembali ke menu utama", &menuUtama},
+        {"Keluar program", &keluarProgram},
+    };
+    cetakMenu(arrayMenu, ARRAY_SIZE(arrayMenu));
   }
 }
 
