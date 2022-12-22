@@ -471,6 +471,13 @@ void hapusMahasiswa() {
   if (index == -1) {
     // todo: ketika nim tidak ditemukan, keluarkan pesan error
     puts("NIM mahasiswa tidak ditemukan!");
+    SPACER;
+    puts("Opsi");
+    MenuItem arrayMenu[] = {
+        {"Kembali ke menu utama", &menuUtama},
+        {"Keluar program", &keluarProgram},
+    };
+    cetakMenu(arrayMenu, ARRAY_SIZE(arrayMenu));
   } else {
     // todo: mengambil data mahasiswa dari mahasiswaPtr ke index
     Mahasiswa mahasiswa = mahasiswaPtr[index];
